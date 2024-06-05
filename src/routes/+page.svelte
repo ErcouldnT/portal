@@ -1,25 +1,27 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { FileDropzone } from '@skeletonlabs/skeleton';
 
-	const authorizedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.exe'];
+	export let form;
+
+	let files: FileList;
+
+	function onChangeHandler(e: Event): void {
+		console.log('File data:', e);
+	}
 </script>
 
-<form
-	class="p-10 flex flex-col gap-5 justify-center items-center"
-	method="post"
-	use:enhance
-	enctype="multipart/form-data"
->
-	<div>
-		<!-- <label for="file">Upload your file</label> -->
-		<input
-			type="file"
-			id="file"
-			name="fileToUpload"
-			accept={authorizedExtensions.join(',')}
-			required
-		/>
-	</div>
+<FileDropzone name="files" bind:files on:change={onChangeHandler}>
+	<svelte:fragment slot="lead">Portal</svelte:fragment>
+	<svelte:fragment slot="message"><strong>Upload a file</strong> or drag and drop</svelte:fragment>
+	<svelte:fragment slot="meta">PNG, JPG, and GIF allowed.</svelte:fragment>
+</FileDropzone>
 
-	<button class="btn variant-filled-primary" type="submit">Submit</button>
+<form use:enhance action="?/upload" method="POST" enctype="multipart/form-data">
+	<input type="file" name="file" required />
+	<button class="btn variant-filled-primary">Upload</button>
+
+	{#if form}
+		<p>Uploaded {form.uploaded}</p>
+	{/if}
 </form>

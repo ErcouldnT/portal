@@ -1,26 +1,16 @@
-import { fail } from '@sveltejs/kit';
-import { writeFileSync } from 'fs';
+import { error } from "@sveltejs/kit";
+import { put } from "@vercel/blob";
 
 export const actions = {
-  default: async ({ request }) => {
-    const formData = Object.fromEntries(await request.formData());
+  upload: async ({ request }) => {
+    const form = await request.formData();
+    const file = form.get("file") as File;
 
-    if (
-      !(formData.fileToUpload as File).name ||
-      (formData.fileToUpload as File).name === 'undefined'
-    ) {
-      return fail(400, {
-        error: true,
-        message: 'You must provide a file to upload'
-      });
+    if (!file) {
+      throw error(400, { message: "No file to upload." });
     }
 
-    const { fileToUpload } = formData as { fileToUpload: File };
-    // Write the file to the static folder
-    writeFileSync(`static/${fileToUpload.name}`, Buffer.from(await fileToUpload.arrayBuffer()));
-
-    return {
-      success: true
-    };
-  }
+    const { url } = await put(file.name, file, { access: "public" });
+    return { uploaded: url };
+  },
 };
